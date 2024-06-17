@@ -26,10 +26,10 @@ class makeOrderRequest extends FormRequest
             'table_id' => ['required', Rule::exists('tables', 'id')],
             'branch_id' => ['required', Rule::exists('branches', 'id')],
             'restaurant_id' => ['required', Rule::exists('restaurants', 'id')],
-            'products' => 'required|array',
-            'products.*.product_id' => ['required', Rule::exists('products', 'id')],
-            'products.*.qty' => 'nullable|integer',
-            'products.*.note' => 'nullable|string',
+            'meals' => 'required|array',
+            'meals.*.meal_id' => ['required', Rule::exists('products', 'id')],
+            'meals.*.qty' => 'nullable|integer',
+            'meals.*.note' => 'nullable|string',
 
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace App\Statuses;
 
-class UserTypes
+class UserStatus
 {
     public const WAITER = 1;
 

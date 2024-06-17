@@ -27,10 +27,10 @@ class AuthRepository extends BaseRepositoryImplementationForMoreThanModel implem
     public function loginEmployee(AuthRequest $request)
     {
         $employee = $this->getByColumn(User::class, 'email', $request->email);
-        if (! $employee || ! Hash::check($employee->password, $request->password)) {
+        if (! $employee || ! Hash::check($request->password, $employee->password)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        $token = $employee->createToken('MyApp', $employee->user_type)->plainTextToken;
+        $token = $employee->createToken('MyApp', [$employee->user_type])->plainTextToken;
 
         return $this->createNewToken($token, $employee);
     }

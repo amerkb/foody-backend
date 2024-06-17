@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\RestaurantAndBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
     use HasFactory;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new RestaurantAndBranch());
+    }
 
     protected $fillable = [
         'status', 'total_price',
@@ -38,8 +46,8 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function product()
+    public function orderDetail()
     {
-        return $this->belongsToMany(Product::class, 'orderDetail')->withPivot('qty', 'note');
+        return $this->belongsToMany(Product::class, 'orderDetail')->withPivot('id','qty', 'note');
     }
 }

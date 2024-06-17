@@ -17,6 +17,8 @@ class OrderController extends Controller
 
     public function makeOrder(makeOrderRequest $request)
     {
-        $this->order->makeOrder($request);
+        $data = $request->validated();
+
+        return $this->order->makeOrder($data);
     }
 }

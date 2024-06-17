@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Kitchen\OrderController;
+use App\Statuses\UserStatus;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(['auth:sanctum', 'abilities:'.UserStatus::CHEF])->prefix('chef')->group(function () {
+    Route::get('getOrder', [OrderController::class, 'getOrder']);
+    Route::put('changeStatusForStartPreparing', [OrderController::class, 'changeStatusForStartPreparing']);
+    Route::put('changeStatusForEndPreparing', [OrderController::class, 'changeStatusForEndPreparing']);
+
 });

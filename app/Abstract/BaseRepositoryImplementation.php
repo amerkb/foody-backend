@@ -475,6 +475,7 @@ abstract class BaseRepositoryImplementation implements BaseRepositoryInterface
     {
         foreach ($this->scopes as $method => $args) {
             $this->query->$method(implode(', ', $args));
+
         }
 
         return $this;

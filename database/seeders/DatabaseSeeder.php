@@ -9,7 +9,7 @@ use App\Models\Category;
 use App\Models\Restaurant;
 use App\Models\Table;
 use App\Models\User;
-use App\Statuses\UserTypes;
+use App\Statuses\UserStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -65,7 +65,7 @@ class DatabaseSeeder extends Seeder
             'category_id' => $category->id,
         ]);
         $category = Category::create([
-            'name' => 'admin',
+            'name' => 'food',
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
         ]);
@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'waiter',
             'email' => 'waiter@example.com',
             'password' => Hash::make(12345678),
-            'user_type' => UserTypes::WAITER,
+            'user_type' => UserStatus::WAITER,
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
         ]);
@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'chef',
             'email' => 'chef@example.com',
             'password' => Hash::make(12345678),
-            'user_type' => UserTypes::CHEF,
+            'user_type' => UserStatus::CHEF,
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
         ]);

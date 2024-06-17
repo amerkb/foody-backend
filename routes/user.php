@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\User\OrderController;
 use Illuminate\Support\Facades\Route;
 
 /*
