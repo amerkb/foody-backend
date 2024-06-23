@@ -15,6 +15,8 @@ class Restaurant extends Authenticatable
         'name', 'email', 'password',
     ];
 
+    protected $hidden = ['password'];
+
     public function branch()
     {
         return $this->hasMany(Branch::class);

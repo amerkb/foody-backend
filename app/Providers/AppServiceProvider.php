@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Interfaces\AuthInterface;
 use App\Interfaces\Chef\OrderInterface as OrderInterfaceChef;
+use App\Interfaces\SuperAdmin\RestaurantInterface;
 use App\Interfaces\user\OrderInterface;
 use App\Interfaces\Waiter\OrderInterface as OrderInterfaceWaiter;
 use App\Repository\AuthRepository;
 use App\Repository\Chef\OrderRepository as OrderRepositoryChef;
+use App\Repository\SuperAdmin\RestaurantRepository;
 use App\Repository\User\OrderRepository;
 use App\Repository\Waiter\OrderRepository as OrderRepositoryWaiter;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         });
         $this->app->bind(OrderInterfaceWaiter::class, function () {
             return new OrderRepositoryWaiter();
+        });
+        $this->app->bind(RestaurantInterface::class, function () {
+            return new RestaurantRepository();
         });
     }
 

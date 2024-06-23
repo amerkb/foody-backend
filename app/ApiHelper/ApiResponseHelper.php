@@ -4,12 +4,12 @@ namespace App\ApiHelper;
 
 class ApiResponseHelper
 {
-    public static function sendResponse(Result $response, int $statusCode = ApiResponseCodes::SUCCESS)
+    public static function sendResponse(Result $result, int $statusCode = ApiResponseCodes::SUCCESS)
     {
         return \Response::json([
-            'success' => $response->isOk,
-            'message' => $response->message,
-            'data' => $response->result ?? null,
+            'success' => $result->isOk,
+            'message' => $result->message,
+            'data' => $result->result ?? null,
         ], $statusCode);
     }
 

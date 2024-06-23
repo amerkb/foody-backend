@@ -48,6 +48,6 @@ class Order extends Model
 
     public function orderDetail()
     {
-        return $this->belongsToMany(Product::class, 'orderDetail')->withPivot('id','qty', 'note');
+        return $this->belongsToMany(Product::class, 'orderDetail')->withPivot('id', 'qty', 'note');
     }
 }
