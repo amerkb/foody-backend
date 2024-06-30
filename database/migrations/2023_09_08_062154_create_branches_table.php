@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('cover')->nullable();
             $table->boolean('active')->default(ActiveStatus::ACTIVE);
+            $table->text('description')->nullable();
             $table->foreignId('restaurant_id')->constrained()->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });

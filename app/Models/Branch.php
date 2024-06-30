@@ -10,7 +10,7 @@ class Branch extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'logo', 'cover', 'restaurant_id', 'active',
+        'name', 'logo', 'cover', 'description', 'restaurant_id', 'active',
     ];
 
     public function restaurant()

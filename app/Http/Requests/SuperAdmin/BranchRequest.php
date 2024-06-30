@@ -4,7 +4,7 @@ namespace App\Http\Requests\SuperAdmin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RestaurantRequest extends FormRequest
+class BranchRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,15 +23,14 @@ class RestaurantRequest extends FormRequest
     {
         if ($this->method() == 'POST') {
             return [
+                'restaurant_id' => 'required|exists:restaurants,id',
                 'name' => 'required|string',
-                'email' => 'required|email',
                 'description' => 'nullable|string',
 
             ];
         } else {
             return [
                 'name' => 'nullable|string',
-                'email' => 'nullable|email',
                 'description' => 'nullable|string',
 
             ];

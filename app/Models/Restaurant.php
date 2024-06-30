@@ -12,12 +12,12 @@ class Restaurant extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'description',
     ];
 
     protected $hidden = ['password'];
 
-    public function branch()
+    public function branchs()
     {
         return $this->hasMany(Branch::class);
     }

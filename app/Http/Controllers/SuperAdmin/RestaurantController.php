@@ -5,7 +5,6 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\RestaurantRequest;
 use App\Interfaces\SuperAdmin\RestaurantInterface;
-use Illuminate\Http\Request;
 
 class RestaurantController extends Controller
 {
@@ -21,6 +20,7 @@ class RestaurantController extends Controller
      */
     public function index()
     {
+        return $this->restaurant->getRestaurant();
 
     }
 
@@ -37,15 +37,17 @@ class RestaurantController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return $this->restaurant->showRestaurant($id);
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(RestaurantRequest $request, string $id)
     {
-        //
+        return $this->restaurant->updateRestaurant($id, $request->validated());
+
     }
 
     /**
@@ -53,6 +55,7 @@ class RestaurantController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return $this->restaurant->deleteRestaurant($id);
+
     }
 }

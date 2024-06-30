@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\SuperAdmin\BranchController;
 use App\Http\Controllers\SuperAdmin\RestaurantController;
+use App\Http\Controllers\SuperAdmin\StatisticsController;
 use App\Statuses\UserStatus;
 use Illuminate\Support\Facades\Route;
 
@@ -17,5 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'abilities:'.UserStatus::SUPER_ADMIN])->prefix('superAdmin')->group(function () {
     Route::apiResource('restaurant', RestaurantController::class);
+    Route::apiResource('branch', BranchController::class);
+    Route::get('RestaurantWithCountBranch', [StatisticsController::class, 'RestaurantWithCountBranch']);
 
 });

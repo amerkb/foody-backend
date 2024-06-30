@@ -2,73 +2,51 @@
 
 namespace App\Http\Controllers\SuperAdmin;
 
-use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AddBranchRequest;
-use App\Http\Requests\EditBranchRequest;
-use App\Http\Resources\BranchResource;
-use App\Models\Branch;
-use App\Models\Restaurant;
+use App\Http\Requests\SuperAdmin\BranchRequest;
+use App\Interfaces\SuperAdmin\BranchInterface;
 
 class BranchController extends Controller
 {
-    use ApiResponseTrait;
+    protected $branch;
 
-    public function show(Branch $branch)
+    public function __construct(BranchInterface $branch)
     {
-        return $this->apiResponse(BranchResource::make($branch), 'success', 200);
+        $this->branch = $branch;
     }
 
-    public function getBranches(Restaurant $restaurant)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(BranchRequest $request)
     {
-        $branches = $restaurant->branch()->get();
-
-        return $this->apiResponse(BranchResource::collection($branches), 'success', 200);
+        return $this->branch->createBranch($request->validated());
     }
 
-    public function store(AddBranchRequest $request)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $request->validated($request->all());
-
-        $branch = Branch::create([
-            'name' => $request->name,
-            'address' => $request->address,
-            'taxRate' => $request->taxRate,
-            'restaurant_id' => $request->restaurant_id,
-        ]);
-
-        return $this->apiResponse(new BranchResource($branch), 'Data successfully saved', 201);
-    }
-
-    public function update(EditBranchRequest $request, Branch $branch)
-    {
-        $request->validated($request->all());
-
-        $branch->update([
-            'name' => $request->name,
-            'address' => $request->address,
-            'taxRate' => $request->taxRate,
-            'restaurant_id' => $request->restaurant_id,
-        ]);
-
-        return $this->apiResponse(BranchResource::make($branch), 'Data successfully saved', 200);
+        return $this->branch->showBranch($id);
 
     }
 
-    public function delete(Branch $branch)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(BranchRequest $request, string $id)
     {
-        $branch->delete();
+        return $this->branch->updateBranch($id, $request->validated());
 
-        return $this->apiResponse(null, 'Deleted Successfully', 200);
     }
 
-    public function getTax(Branch $branch)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
     {
-        if ($branch) {
-            $tax = (intval($branch->taxRate) / 100);
+        return $this->branch->deleteBranch($id);
 
-            return response()->json(['TaxRate' => $tax], 200);
-
-        }
     }
 }
