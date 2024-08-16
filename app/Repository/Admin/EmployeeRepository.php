@@ -9,7 +9,9 @@ use App\ApiHelper\Result;
 use App\Http\Resources\EmployeeResource;
 use App\Interfaces\Admin\EmployeeInterface;
 use App\Models\User;
+use App\Services\Email\EmailService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeeRepository extends BaseRepositoryImplementation implements EmployeeInterface
 {
@@ -20,7 +22,7 @@ class EmployeeRepository extends BaseRepositoryImplementation implements Employe
 
     public function getemployees()
     {
-        $emp = User::query()->where('active', 1)->get();
+        $emp = $this->get();
         $emp = EmployeeResource::collection($emp);
 
         return ApiResponseHelper::sendResponse(new Result($emp, 'table created'), ApiResponseCodes::CREATED);
@@ -29,8 +31,8 @@ class EmployeeRepository extends BaseRepositoryImplementation implements Employe
     public function storeemp($data)
     {
         $user = Auth::user();
-
-        $emp = $this->create(array_merge($data, ['restaurant_id' => $user->id]));
+        $password = rand(00000, 99999);
+        $emp = $this->create(array_merge($data, ['restaurant_id' => $user->id, 'password' => Hash::make($password)]));
 
         return ApiResponseHelper::sendResponse(new Result($emp, 'emp created'), ApiResponseCodes::CREATED);
     }

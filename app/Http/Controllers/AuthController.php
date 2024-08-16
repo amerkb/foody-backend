@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AuthEmployeeRequest;
 use App\Http\Requests\AuthRequest;
 use App\Interfaces\AuthInterface;
 
@@ -21,7 +22,7 @@ class AuthController extends Controller
 
     }
 
-    public function loginEmployee(AuthRequest $request)
+    public function loginEmployee(AuthEmployeeRequest $request)
     {
 
         return $this->auth->loginEmployee($request);

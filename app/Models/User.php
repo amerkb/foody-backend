@@ -20,6 +20,7 @@ class User extends Authenticatable
         'user_type',
         'branch_id',
         'restaurant_id',
+        'deviceKey',
     ];
 
     protected static function boot()

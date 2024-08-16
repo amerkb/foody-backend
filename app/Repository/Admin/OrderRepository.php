@@ -3,32 +3,27 @@
 namespace App\Repository\Admin;
 
 use App\Abstract\BaseRepositoryImplementation;
+use App\ApiHelper\ApiResponseHelper;
+use App\ApiHelper\Result;
+use App\Http\Resources\OrderResource;
 use App\Interfaces\Admin\OrderInterface;
+use App\Models\Order;
 
 class OrderRepository extends BaseRepositoryImplementation implements OrderInterface
 {
     public function model()
     {
-        // TODO: Implement model() method.
+        return Order::class;
     }
 
-    public function createOrder($data)
+    public function getOrders()
     {
-        // TODO: Implement createOrder() method.
-    }
+        $this->with = ['orderDetail', 'table', 'waiter', 'chef'];
+        $orders = $this->get();
+        $orders = OrderResource::collection($orders);
 
-    public function showOrder($id)
-    {
-        // TODO: Implement showOrder() method.
-    }
-
-    public function updateOrder($data, $id)
-    {
-        // TODO: Implement updateOrder() method.
-    }
-
-    public function deleteOrder($id)
-    {
-        // TODO: Implement deleteOrder() method.
+        return ApiResponseHelper::sendResponse(
+            new Result($orders, 'Done')
+        );
     }
 }

@@ -7,8 +7,11 @@ use App\ApiHelper\ApiResponseHelper;
 use App\ApiHelper\Result;
 use App\Http\Resources\OrderResource;
 use App\Interfaces\Chef\OrderInterface;
+use App\Jobs\SendNotificationJob;
 use App\Models\Order;
+use App\Models\User;
 use App\Statuses\OrderStatus;
+use App\Statuses\UserStatus;
 use Illuminate\Support\Facades\Auth;
 
 class OrderRepository extends BaseRepositoryImplementation implements OrderInterface
@@ -37,6 +40,8 @@ class OrderRepository extends BaseRepositoryImplementation implements OrderInter
     public function changeStatusForEndPreparing(int $order_id)
     {
         $this->updateById($order_id, ['status' => OrderStatus::END_PREPARING]);
+        $users = User::where('user_type', UserStatus::WAITER)->get();
+        dispatch(new SendNotificationJob($users));
 
         return ApiResponseHelper::sendMessageResponse(
             'update status order for end preparing'

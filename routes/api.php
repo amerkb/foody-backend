@@ -17,5 +17,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/download/{id}', [App\Http\Controllers\Controller::class,"download"])->middleware('cors');
-
+Route::get('/download/{id}', [App\Http\Controllers\Controller::class, 'download'])->middleware('cors');
+Route::get('/test', [App\Http\Controllers\Controller::class, 'test']);

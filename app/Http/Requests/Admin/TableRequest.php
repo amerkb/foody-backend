@@ -22,10 +22,19 @@ class TableRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'table_num' => 'required|max:255',
-            'branch_id' => ['required', Rule::exists('branches', 'id')],
 
-        ];
+        if ($this->method() == 'POST') {
+            return [
+                'table_num' => 'required|max:255',
+                'branch_id' => ['required', Rule::exists('branches', 'id')],
+
+            ];
+        } else {
+            return [
+                'table_num' => 'sometimes|max:255',
+
+            ];
+        }
+
     }
 }

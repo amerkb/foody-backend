@@ -33,7 +33,7 @@ class SendNotificationJob implements ShouldQueue
         $body = 'You Have New Order';
         $content = 'You Have New Order';
         foreach ($this->users as $user) {
-            $this->firebaseService->sendNotification('token', $title, $body, $body, $body);
+            $this->firebaseService->sendNotification($user->deviceKey, $title, $body);
         }
     }
 }

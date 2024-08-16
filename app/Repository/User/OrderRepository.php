@@ -6,8 +6,11 @@ use App\Abstract\BaseRepositoryImplementationForMoreThanModel;
 use App\ApiHelper\ApiResponseCodes;
 use App\ApiHelper\ApiResponseHelper;
 use App\Interfaces\user\OrderInterface;
+use App\Jobs\SendNotificationJob;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
+use App\Statuses\UserStatus;
 use Illuminate\Support\Facades\DB;
 
 class OrderRepository extends BaseRepositoryImplementationForMoreThanModel implements OrderInterface
@@ -33,6 +36,8 @@ class OrderRepository extends BaseRepositoryImplementationForMoreThanModel imple
             }
             $order->orderDetail()->syncWithoutDetaching($orderDetails);
             DB::commit();
+            $users = $this->where(User::class, 'user_type', UserStatus::CHEF)->get(User::class);
+            dispatch(new SendNotificationJob($users));
 
             return ApiResponseHelper::sendMessageResponse('order created', ApiResponseCodes::CREATED);
 

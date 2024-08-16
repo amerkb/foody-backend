@@ -22,12 +22,21 @@ class EmployeeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:4',
-            'user_type' => 'required',
-            'branch_id' => ['required', Rule::exists('branches', 'id')],
-        ];
+        if ($this->method() == 'POST') {
+            return [
+                'name' => 'required',
+                'email' => 'required|email',
+                'user_type' => 'required',
+                'branch_id' => ['required', Rule::exists('branches', 'id')],
+            ];
+        } else {
+            return [
+                'name' => 'sometimes',
+                'email' => 'sometimes|email',
+                'user_type' => 'sometimes',
+            ];
+
+        }
+
     }
 }

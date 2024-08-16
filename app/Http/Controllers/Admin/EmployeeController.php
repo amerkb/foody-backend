@@ -6,24 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\EmployeeRequest;
 use App\Repository\Admin\EmployeeRepository;
 
-class Employeecontroller extends Controller
+class EmployeeController extends Controller
 {
     public function __construct(EmployeeRepository $emp)
     {
         $this->user = $emp;
     }
 
-    public function getemps()
+    public function index()
     {
         return $this->user->getemployees();
     }
 
-    public function storeemp(string $id, EmployeeRequest $request)
+    public function store(EmployeeRequest $request)
     {
         return $this->user->storeemp($request->validated());
     }
 
-    public function updateemp($id, EmployeeRequest $request)
+    public function update($id, EmployeeRequest $request)
     {
         return $this->user->updateById($id, $request->validated());
     }

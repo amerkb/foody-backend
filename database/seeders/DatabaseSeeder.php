@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
             'restaurant_id' => $restaurant->id,
         ]);
         $category = Category::create([
-            'name' => 'admin',
+            'name' => 'pizza',
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
         ]);
@@ -56,17 +56,17 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $product = DB::table('products')->insert([
-            'name' => 'pizza',
+            'name' => 'vegetable pizza',
             'price' => 133,
             'description' => 'good',
-            'image' => 'https',
+            'image' => 'food.jpg',
             'estimated_time' => '15:41:30',
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
             'category_id' => $category->id,
         ]);
         $category = Category::create([
-            'name' => 'food',
+            'name' => 'drinks',
             'branch_id' => $branch->id,
             'restaurant_id' => $restaurant->id,
         ]);

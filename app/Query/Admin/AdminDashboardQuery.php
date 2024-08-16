@@ -2,267 +2,105 @@
 
 namespace App\Query\Admin;
 
-use App\Models\Attendance;
-use App\Models\Nationalitie;
-use App\Models\User;
-use App\Statuses\EmployeeStatus;
-use App\Statuses\GenderStatus;
-use App\Statuses\UserTypes;
-use Carbon\Carbon;
+use App\ApiHelper\ApiResponseHelper;
+use App\ApiHelper\Result;
+use App\Statuses\UserStatus;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardQuery
 {
-    public function getDashboardData(): object
+    public function CompareFoodsByRequest($branch_id)
     {
+        $restaurantId = Auth::id();
+        $products = DB::table('products as pr')
+            ->leftJoin('orderdetail as od', 'pr.id', '=', 'od.product_id')
+            ->leftJoin('orders as o', function ($join) use ($restaurantId, $branch_id) {
+                $join->on('o.id', '=', 'od.order_id')
+                    ->where('o.restaurant_id', '=', $restaurantId)
+                    ->where('o.branch_id', '=', $branch_id);
+            })
+            ->select(
+                'pr.id as product_id',
+                'pr.name',
+                DB::raw('COALESCE(COUNT(od.product_id), 0) as count')
+            )
+            ->where('pr.restaurant_id', '=', $restaurantId)
+            ->where('pr.branch_id', '=', $branch_id)
+            ->groupBy('pr.id', 'pr.name')
+            ->orderBy(DB::raw('COUNT(od.product_id)'), 'DESC')
+            ->get();
 
-        $employeesCount = $this->getAllEmployees();
-        $attendanceRate = $this->getAttendaneRate();
-        $onDutyEmployeesCount = $this->getOnDutyEmployees();
-        $onVacationEmployeesCount = $this->getOnVacationEmployees();
-        $onDutyEmployeesPercentage = $this->getOnDutyEmployeesPercentage();
-        $onVacationEmployeesPercentage = $this->getOnVacationEmployeesPercentage();
-        $nationalitiesRate = $this->getNationalatiesRate();
-        $contractExpirationPercentage = $this->getContractExpirationPercentage();
-        $contractExpiration = $this->getContractExpiration();
-        $expiredPassportsPercentage = $this->getExpiredPassportsPercentage();
-        $expiredPassports = $this->getExpiredPassports();
-        $maleEmployees = $this->getMaleEmployeesPercentage();
-        $femaleEmployees = $this->getFemaleEmployeesPercentage();
-        $maleEmployeesCount = $this->getMaleEmployeesCount();
-        $femaleEmployeesCount = $this->getFemaleEmployeesCount();
+        return ApiResponseHelper::sendResponse(new Result($products, 'Compare Foods By Request'));
 
-        $result = [
-            'all_employees_count' => $employeesCount,
-            'attendance_rate' => $attendanceRate,
-            'active_employees_count' => $onDutyEmployeesCount,
-            'on_vacation_employees_count' => $onVacationEmployeesCount,
-            'active_employees_percentage' => $onDutyEmployeesPercentage,
-            'on_vacation_employees_percentage' => $onVacationEmployeesPercentage,
-            'contract_expiration_percentage' => $contractExpirationPercentage,
-            'nationalities_rate' => $nationalitiesRate,
-            'contract_expiration' => $contractExpiration,
-            'expired_passports_percentage' => $expiredPassportsPercentage,
-            'expired_passports' => $expiredPassports,
-            'male_employees' => $maleEmployees,
-            'female_employees' => $femaleEmployees,
-            'male_employees_count' => $maleEmployeesCount,
-            'female_employees_count' => $femaleEmployeesCount,
-
-        ];
-
-        return (object) $result;
     }
 
-    private function getAllEmployees()
+    public function CompareDaysByRequest($branch_id)
     {
-        $allEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->where('company_id', auth()->user()->company_id)->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->count();
 
-        return $allEmployeesCount;
-    }
+        $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    private function getMaleEmployeesCount()
-    {
-        $maleEmployeeCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('gender', GenderStatus::MALE)->count();
-
-        return $maleEmployeeCount;
-    }
-
-    private function getFemaleEmployeesCount()
-    {
-        $femaleEmployeeCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('gender', GenderStatus::FEMALE)->count();
-
-        return $femaleEmployeeCount;
-    }
-
-    private function getOnDutyEmployees()
-    {
-        $onDutyEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('status', EmployeeStatus::ACTIVE)->count();
-
-        return $onDutyEmployeesCount;
-    }
-
-    private function getOnDutyEmployeesPercentage()
-    {
-        $onDutyEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('status', EmployeeStatus::ACTIVE)->count();
-        $allEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->count();
-        if ($allEmployeesCount != 0) {
-            $onDutyEmployeePercentage = ($onDutyEmployeesCount / $allEmployeesCount) * 100;
-
-            return round($onDutyEmployeePercentage, 2);
-        } else {
-            return 0;
-        }
-    }
-
-    private function getOnVacationEmployeesPercentage()
-    {
-        $onVacationEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->where('company_id', auth()->user()->company_id)->where('status', EmployeeStatus::ON_VACATION)->count();
-        $allEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->where('company_id', auth()->user()->company_id)->count();
-
-        if ($allEmployeesCount != 0) {
-            $onVacationEmployeePercentage = ($onVacationEmployeesCount / $allEmployeesCount) * 100;
-
-            return round($onVacationEmployeePercentage, 2);
-        } else {
-            return 0;
-        }
-    }
-
-    private function getMaleEmployeesPercentage()
-    {
-        $maleEmployeeCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('gender', GenderStatus::MALE)->count();
-        $allEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->count();
-
-        if ($allEmployeesCount != 0) {
-            $maleEmployeePercentage = ($maleEmployeeCount / $allEmployeesCount) * 100;
-
-            return round($maleEmployeePercentage, 2);
-        } else {
-            return 0;
-        }
-    }
-
-    private function getFemaleEmployeesPercentage()
-    {
-        $femaleEmployeeCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('gender', GenderStatus::FEMALE)->count();
-        $allEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->count();
-
-        if ($allEmployeesCount != 0) {
-            $femaleEmployeePercentage = ($femaleEmployeeCount / $allEmployeesCount) * 100;
-
-            return round($femaleEmployeePercentage, 2);
-        } else {
-            return 0;
-        }
-    }
-
-    private function getOnVacationEmployees()
-    {
-        $onVacationEmployeesCount = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->where('company_id', auth()->user()->company_id)->where('status', EmployeeStatus::ON_VACATION)->count();
-
-        return $onVacationEmployeesCount;
-    }
-
-    public function getAttendaneRate()
-    {
-        $currentDate = Carbon::now()->toDateString();
-
-        $startDate = Carbon::now()->startOfMonth()->toDateString();
-
-        $daysOfMonth = Carbon::parse($currentDate)->diffInDays(Carbon::parse($startDate)) + 1;
-
-        $attendancesCount = Attendance::where('status', 1)->where('company_id', auth()->user()->company_id)->whereMonth('date', Carbon::now()->month)->count();
-
-        if ($attendancesCount != 0) {
-            $attendanceRate = ($attendancesCount / $daysOfMonth) * 100;
-
-            return number_format($attendanceRate);
-        } else {
-            return 0;
-        }
-    }
-
-    public function getNationalatiesRate()
-    {
-        $nationalityCounts = User::groupBy('nationalitie_id')
-            ->whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])
-            ->selectRaw('nationalitie_id, COUNT(*) as count')
+        $daysCount = DB::table('orders as o')
+            ->join('orderdetail as od', 'o.id', '=', 'od.order_id')
+            ->select(
+                DB::raw('DAYNAME(o.created_at) as order_day'),
+                DB::raw('COUNT(DAYNAME(o.created_at)) as count')
+            )
+            ->where('o.restaurant_id', Auth::id())
+            ->where('o.branch_id', $branch_id)
+            ->groupBy('order_day')
+            ->orderByRaw("FIELD(order_day, 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')")
             ->get()
-            ->pluck('count', 'nationalitie_id');
+            ->keyBy('order_day')
+            ->toArray();
 
-        $totalEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])
-            ->count();
-
-        $nationalityWithMostEmployees = $nationalityCounts->map(function ($count, $nationalityId) use ($totalEmployees) {
-            $nationality = Nationalitie::find($nationalityId);
-
-            return [
-                'nationality_id' => $nationalityId,
-                'nationality_name' => $nationality->name,
-                'nationality_name_arabic' => $nationality->name_arabic,
-                'percent' => number_format(($count / $totalEmployees) * 100, 2),
+        $results = [];
+        foreach ($daysOfWeek as $day) {
+            $results[] = [
+                'order_day' => $day,
+                'count' => $daysCount[$day]->count ?? 0,
             ];
-        })
-            ->sortByDesc('percent')
-            ->take(3)
-            ->values();
-
-        $remainingNationalities = $nationalityCounts->reject(function ($count, $nationalityId) use ($nationalityWithMostEmployees) {
-            return $nationalityWithMostEmployees->contains('nationality_id', $nationalityId);
-        });
-
-        if ($totalEmployees != 0) {
-            $remainingPercent = 100 - $nationalityWithMostEmployees->sum('percent');
-        } else {
-            return 0;
         }
 
-        return [
-            'most_nationalities' => $nationalityWithMostEmployees,
-            'others' => number_format($remainingPercent, 2),
-        ];
+        $daysCount = collect($results);
+
+        return ApiResponseHelper::sendResponse(new Result($daysCount, 'Compare Days By Request'));
+
     }
 
-    public function getContractExpirationPercentage()
+    public function CompareWaitersByAverageOrder($branch_id)
     {
-        $totalEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->where('company_id', auth()->user()->company_id)->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->count();
 
-        $approachingExpirationEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotNull('end_job_contract')
-            ->where('end_job_contract', '<=', Carbon::now()->addMonth())
-            ->count();
+        $waiterAverages = DB::table('users as u')
+            ->leftJoin('orders as o', 'u.id', '=', 'o.waiter_id')
+            ->select(
+                'u.id',
+                'u.name',
+                DB::raw("TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(o.time_Waiter))), '%H:%i:%s') as avg_time_waiter")
+            )
+            ->where('u.user_type', UserStatus::WAITER)
+            ->where('u.branch_id', $branch_id)
+            ->where('u.restaurant_id', Auth::id())
+            ->groupBy('u.id', 'u.name')
+            ->get();
 
-        if ($approachingExpirationEmployees != 0 && $totalEmployees != 0) {
-            $percentApproachingExpiration = round(($approachingExpirationEmployees / $totalEmployees) * 100, 2);
+        return ApiResponseHelper::sendResponse(new Result($waiterAverages, 'Compare Waiters By Average Order'));
 
-            return number_format($percentApproachingExpiration);
-        } else {
-            return 0;
-        }
     }
 
-    public function getExpiredPassportsPercentage()
+    public function CompareHourByDate($data)
     {
-        $totalEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->where('company_id', auth()->user()->company_id)->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])->count();
 
-        $passportExpirationEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotNull('end_passport')
-            ->where('end_passport', '<=', Carbon::now()->addMonth())
-            ->count();
-        if ($passportExpirationEmployees != 0 && $totalEmployees != 0) {
-            $percentExpirationPassport = round(($passportExpirationEmployees / $totalEmployees) * 100, 2);
+        $ordersByHour = DB::table('orders')
+            ->whereDate('created_at', $data['date'])
+            ->where('restaurant_id', Auth::id())
+            ->where('branch_id', $data['branch_id'])
+            ->selectRaw('HOUR(created_at) as order_hour, COUNT(*) as order_count')
+            ->groupBy(DB::raw('HOUR(created_at)'))
+            ->orderBy('order_hour')
+            ->get();
 
-            return number_format($percentExpirationPassport);
-        } else {
-            return 0;
-        }
-    }
+        return ApiResponseHelper::sendResponse(new Result($ordersByHour, 'Compare Hour By Date'));
 
-    public function getContractExpiration()
-    {
-        $approachingExpirationContractEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotNull('end_job_contract')
-            ->where('end_job_contract', '<=', Carbon::now()->addMonth())
-            ->get(['id', 'name', 'departement', 'position', 'start_job_contract', 'end_job_contract']);
-
-        return $approachingExpirationContractEmployees;
-    }
-
-    public function getExpiredPassports()
-    {
-        $approachingExpirationEmployees = User::whereIn('type', [UserTypes::HR, UserTypes::EMPLOYEE])->whereNotIn('status', [EmployeeStatus::TEMPORARY_DISMISSED, EmployeeStatus::PERMANENT_DISMISSED])
-            ->where('company_id', auth()->user()->company_id)
-            ->whereNotNull('end_passport')
-            ->where('end_passport', '<=', Carbon::now()->addMonth())
-            ->get(['id', 'name', 'departement', 'position',  'end_passport']);
-
-        return $approachingExpirationEmployees;
     }
 }

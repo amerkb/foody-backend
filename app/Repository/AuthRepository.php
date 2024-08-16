@@ -19,18 +19,19 @@ class AuthRepository extends BaseRepositoryImplementationForMoreThanModel implem
         if (! $restaurant || ! Hash::check($request->password, $restaurant->password)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        $token = $restaurant->createToken('MyApp', ['restaurant'])->plainTextToken;
+        $token = $restaurant->createToken('MyApp', [UserStatus::ADMIN])->plainTextToken;
 
         return $this->createNewToken($token, $restaurant);
 
     }
 
-    public function loginEmployee(AuthRequest $request)
+    public function loginEmployee($request)
     {
         $employee = $this->getByColumn(User::class, 'email', $request->email);
-        if (! $employee || ! Hash::check($employee->password, $request->password)) {
+        if (! $employee || ! Hash::check($request->password, $employee->password)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+        $employee =  $this->updateById(User::class, $employee->id, ['deviceKey' => $request->deviceKey]);
         $token = $employee->createToken('MyApp', [$employee->user_type])->plainTextToken;
 
         return $this->createNewToken($token, $employee);
